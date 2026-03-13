@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
 import { supabase } from "../lib/supabase";
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
@@ -16,6 +16,8 @@ export default function Home() {
   const [roomCode, setRoomCode] = useState("");
   const [joinResult, setJoinResult] = useState<{ code: string; name: string } | null>(null);
   const [joinError, setJoinError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const hiddenInputRef = useRef<HTMLInputElement | null>(null);
 
   const normalizedRoomCode = useMemo(
     () => roomCode.trim().toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4),
@@ -155,10 +157,42 @@ export default function Home() {
     }
   }
 
-  const shareUrl =
-    typeof window !== "undefined" && createResultCode
-      ? `${window.location.origin}/room/${createResultCode}`
-      : "";
+  const shareUrl = createResultCode
+    ? `https://shames-on-me.vercel.app/room/${createResultCode}`
+    : "";
+
+  async function handleCopyLink() {
+    if (!shareUrl) return;
+
+    let copiedOk = false;
+
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        copiedOk = true;
+      }
+    } catch {
+      copiedOk = false;
+    }
+
+    if (!copiedOk) {
+      try {
+        if (hiddenInputRef.current) {
+          hiddenInputRef.current.value = shareUrl;
+          hiddenInputRef.current.select();
+          document.execCommand("copy");
+          copiedOk = true;
+        }
+      } catch {
+        // ignore final failure
+      }
+    }
+
+    if (copiedOk) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-6 text-white">
@@ -235,19 +269,24 @@ export default function Home() {
                       {shareUrl && (
                         <button
                           type="button"
-                          onClick={async () => {
-                            try {
-                              await navigator.clipboard.writeText(shareUrl);
-                            } catch {
-                              // ignore
-                            }
-                          }}
+                          onClick={handleCopyLink}
                           className="shrink-0 rounded-lg border border-white/30 px-2 py-1 text-xs text-white/90"
                         >
                           Copy
                         </button>
                       )}
                     </div>
+                    <input
+                      ref={hiddenInputRef}
+                      type="text"
+                      readOnly
+                      aria-hidden="true"
+                      tabIndex={-1}
+                      className="sr-only pointer-events-none h-0 w-0 opacity-0"
+                    />
+                    {copied && (
+                      <p className="mt-1 text-[10px] text-white/80">Link copied!</p>
+                    )}
                   </div>
 
                   <button

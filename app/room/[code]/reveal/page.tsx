@@ -6,7 +6,12 @@ import Link from "next/link";
 import { supabase } from "../../../../lib/supabase";
 import { QUESTIONS } from "../../../../data/questions";
 
-type RoomRow = { id: string | number; code: string };
+type RoomRow = {
+  id: string | number;
+  code: string;
+  current_question_index?: number | null;
+  current_rule?: RuleType | null;
+};
 type PlayerRow = { id: string | number; name: string };
 type AnswerRow = { player_id: string | number; answer: string };
 type RuleType = "majority" | "minority";
@@ -25,7 +30,6 @@ export default function RevealPage() {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [secondsRemaining, setSecondsRemaining] = useState(5);
   const [rule, setRule] = useState<RuleType | null>(null);
-  const [isRandomRule, setIsRandomRule] = useState(false);
 
   const currentQuestion = QUESTIONS[questionIndex];
 
@@ -60,7 +64,7 @@ export default function RevealPage() {
       try {
         const { data: foundRoom, error: roomError } = await supabase
           .from("rooms")
-          .select("id, code")
+          .select("id, code, current_question_index, current_rule")
           .eq("code", code)
           .maybeSingle();
 
@@ -138,43 +142,61 @@ export default function RevealPage() {
     };
   }, [code, currentQuestion]);
 
+  // Deterministic rule based on room code + question id so all clients agree.
+  function computeDeterministicRule(roomCode: string, questionId: number): RuleType {
+    let hash = 0;
+    for (let i = 0; i < roomCode.length; i++) {
+      hash = (hash * 31 + roomCode.charCodeAt(i)) | 0;
+    }
+    hash = (hash + questionId * 101) | 0;
+    return hash % 2 === 0 ? "majority" : "minority";
+  }
+
   useEffect(() => {
-    if (!currentQuestion) return;
+    if (!currentQuestion || !room) return;
 
-    try {
-      const storedRule = sessionStorage.getItem(
-        `som:rule:${code}:${String(currentQuestion.id)}`
-      ) as RuleType | null;
-      const storedRandom =
-        sessionStorage.getItem(`som:rule_random:${code}:${String(currentQuestion.id)}`) ===
-        "true";
+    let cancelled = false;
 
-      if (storedRule === "majority" || storedRule === "minority") {
-        setRule(storedRule);
-        setIsRandomRule(storedRandom);
-        return;
-      }
+    async function ensureRuleForRound() {
+      try {
+        const { data: latestRoom, error } = await supabase
+          .from("rooms")
+          .select("id, code, current_question_index, current_rule")
+          .eq("id", room.id)
+          .maybeSingle();
 
-      const randomRule: RuleType = Math.random() < 0.5 ? "majority" : "minority";
-      setRule(randomRule);
-      setIsRandomRule(true);
+        if (error || !latestRoom) return;
 
-      sessionStorage.setItem(
-        `som:rule:${code}:${String(currentQuestion.id)}`,
-        randomRule
-      );
-      sessionStorage.setItem(
-        `som:rule_random:${code}:${String(currentQuestion.id)}`,
-        "true"
-      );
-    } catch {
-      // If session storage fails, fall back to a default rule.
-      if (!rule) {
-        setRule("majority");
-        setIsRandomRule(false);
+        let effectiveRule = (latestRoom.current_rule as RuleType | null) ?? null;
+        const storedIndex = latestRoom.current_question_index ?? null;
+
+        if (!effectiveRule || storedIndex !== currentQuestion.id) {
+          effectiveRule = computeDeterministicRule(latestRoom.code, currentQuestion.id);
+
+          await supabase
+            .from("rooms")
+            .update({
+              current_question_index: currentQuestion.id,
+              current_rule: effectiveRule,
+            })
+            .eq("id", latestRoom.id);
+        }
+
+        if (!cancelled) {
+          setRoom(latestRoom as RoomRow);
+          setRule(effectiveRule);
+        }
+      } catch (e) {
+        console.error(e);
       }
     }
-  }, [code, currentQuestion, rule]);
+
+    ensureRuleForRound();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [room, currentQuestion]);
 
   useEffect(() => {
     if (loading || error || !room || !currentQuestion || !rule) return;
