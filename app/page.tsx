@@ -10,6 +10,7 @@ export default function Home() {
   const [busy, setBusy] = useState<"create" | "join" | null>(null);
   const [createResultCode, setCreateResultCode] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [view, setView] = useState<"start" | "create" | "join">("start");
   const [hostName, setHostName] = useState("");
   const [playerName, setPlayerName] = useState("");
   const [roomCode, setRoomCode] = useState("");
@@ -154,106 +155,164 @@ export default function Home() {
     }
   }
 
+  const shareUrl =
+    typeof window !== "undefined" && createResultCode
+      ? `${window.location.origin}/room/${createResultCode}`
+      : "";
+
   return (
     <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-md">
         <h1 className="text-3xl font-bold tracking-tight text-center">Shames On Me</h1>
         <p className="mt-2 text-center text-sm text-white/60">
-          Create a room or join one with a code.
+          Kimin ne itiraf edeceğini gör.
         </p>
 
-        <div className="mt-8 space-y-6">
-          <section className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <h2 className="text-sm font-semibold text-white/80">Host</h2>
+        {view === "start" && (
+          <div className="mt-8 space-y-4">
+            <button
+              onClick={() => setView("create")}
+              className="w-full rounded-xl bg-white text-black py-3 font-semibold"
+            >
+              Create a New Game Room
+            </button>
+            <button
+              onClick={() => setView("join")}
+              className="w-full rounded-xl bg-red-600 py-3 font-semibold"
+            >
+              Join as a Player
+            </button>
+          </div>
+        )}
 
-            <div className="mt-3 space-y-3">
-              <div>
-                <label className="text-xs text-white/60">Host name</label>
-                <input
-                  value={hostName}
-                  onChange={(e) => setHostName(e.target.value)}
-                  placeholder="e.g. Halil"
-                  className="mt-1 w-full rounded-xl bg-black/40 border border-white/10 px-3 py-3 outline-none focus:border-white/30"
-                />
-              </div>
+        {view === "create" && (
+          <div className="mt-8 space-y-4">
+            <button
+              onClick={() => setView("start")}
+              className="text-xs text-white/60 underline underline-offset-4"
+            >
+              ← Back
+            </button>
 
-              <button
-                onClick={createRoom}
-                disabled={busy !== null}
-                className="w-full rounded-xl bg-white text-black py-3 font-semibold disabled:opacity-50"
-              >
-                {busy === "create" ? "Creating..." : "Create Room"}
-              </button>
-            </div>
+            <section className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <h2 className="text-sm font-semibold text-white/80">Create a New Game Room</h2>
 
-            {createResultCode && (
-              <div className="mt-4 rounded-xl bg-black/40 border border-white/10 p-3">
-                <div className="text-xs text-white/60">Created room code</div>
-                <div className="mt-1 text-2xl font-bold tracking-widest">{createResultCode}</div>
+              <div className="mt-3 space-y-3">
+                <div>
+                  <label className="text-xs text-white/60">Your name</label>
+                  <input
+                    value={hostName}
+                    onChange={(e) => setHostName(e.target.value)}
+                    placeholder="e.g. Halil"
+                    className="mt-1 w-full rounded-xl bg-black/40 border border-white/10 px-3 py-3 outline-none focus:border-white/30"
+                  />
+                </div>
+
                 <button
-                  onClick={() => router.push(`/room/${createResultCode}`)}
-                  className="mt-3 w-full rounded-xl bg-red-600 py-2.5 font-semibold"
+                  onClick={createRoom}
+                  disabled={busy !== null}
+                  className="w-full rounded-xl bg-white text-black py-3 font-semibold disabled:opacity-50"
                 >
-                  Enter Room
+                  {busy === "create" ? "Creating..." : "Create Room"}
                 </button>
               </div>
-            )}
 
-            {createError && <p className="mt-3 text-sm text-red-400">{createError}</p>}
-          </section>
-
-          <section className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <h2 className="text-sm font-semibold text-white/80">Player</h2>
-
-            <div className="mt-3 space-y-3">
-              <div>
-                <label className="text-xs text-white/60">Player name</label>
-                <input
-                  value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value)}
-                  placeholder="e.g. Halile"
-                  className="mt-1 w-full rounded-xl bg-black/40 border border-white/10 px-3 py-3 outline-none focus:border-white/30"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-white/60">Room code</label>
-                <input
-                  value={roomCode}
-                  onChange={(e) => setRoomCode(e.target.value)}
-                  placeholder="ABCD"
-                  inputMode="text"
-                  autoCapitalize="characters"
-                  className="mt-1 w-full rounded-xl bg-black/40 border border-white/10 px-3 py-3 tracking-widest uppercase outline-none focus:border-white/30"
-                />
-              </div>
-
-              <button
-                onClick={joinRoom}
-                disabled={busy !== null}
-                className="w-full rounded-xl bg-red-600 py-3 font-semibold disabled:opacity-50"
-              >
-                {busy === "join" ? "Joining..." : "Join Room"}
-              </button>
-
-              {joinError && <p className="text-sm text-red-400">{joinError}</p>}
-
-              {joinResult && (
-                <div className="rounded-xl bg-black/40 border border-white/10 p-3 text-sm">
+              {createResultCode && (
+                <div className="mt-4 rounded-xl bg-black/40 border border-white/10 p-3 space-y-3">
                   <div>
-                    <span className="text-white/60">Joined room:</span>{" "}
-                    <span className="font-semibold tracking-widest">{joinResult.code}</span>
+                    <div className="text-xs text-white/60">Room code</div>
+                    <div className="mt-1 text-2xl font-bold tracking-widest">
+                      {createResultCode}
+                    </div>
                   </div>
-                  <div className="mt-1">
-                    <span className="text-white/60">Player name:</span>{" "}
-                    <span className="font-semibold">{joinResult.name}</span>
+
+                  <div>
+                    <div className="text-xs text-white/60">Share link</div>
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className="text-xs text-white/70 break-all">
+                        {shareUrl || `/room/${createResultCode}`}
+                      </span>
+                      {shareUrl && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(shareUrl);
+                            } catch {
+                              // ignore
+                            }
+                          }}
+                          className="shrink-0 rounded-lg border border-white/20 px-2 py-1 text-xs text-white/80"
+                        >
+                          Copy
+                        </button>
+                      )}
+                    </div>
                   </div>
+
+                  <button
+                    onClick={() => router.push(`/room/${createResultCode}`)}
+                    className="w-full rounded-xl bg-red-600 py-2.5 font-semibold"
+                  >
+                    Start Game
+                  </button>
                 </div>
               )}
-            </div>
-          </section>
-        </div>
+
+              {createError && <p className="mt-3 text-sm text-red-400">{createError}</p>}
+            </section>
+          </div>
+        )}
+
+        {view === "join" && (
+          <div className="mt-8 space-y-4">
+            <button
+              onClick={() => setView("start")}
+              className="text-xs text-white/60 underline underline-offset-4"
+            >
+              ← Back
+            </button>
+
+            <section className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <h2 className="text-sm font-semibold text-white/80">Join as a Player</h2>
+
+              <div className="mt-3 space-y-3">
+                <div>
+                  <label className="text-xs text-white/60">Your name</label>
+                  <input
+                    value={playerName}
+                    onChange={(e) => setPlayerName(e.target.value)}
+                    placeholder="e.g. Halil"
+                    className="mt-1 w-full rounded-xl bg-black/40 border border-white/10 px-3 py-3 outline-none focus:border-white/30"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-white/60">Room code</label>
+                  <input
+                    value={roomCode}
+                    onChange={(e) => setRoomCode(e.target.value)}
+                    placeholder="ABCD"
+                    inputMode="text"
+                    autoCapitalize="characters"
+                    className="mt-1 w-full rounded-xl bg-black/40 border border-white/10 px-3 py-3 tracking-widest uppercase outline-none focus:border-white/30"
+                  />
+                </div>
+
+                <button
+                  onClick={joinRoom}
+                  disabled={busy !== null}
+                  className="w-full rounded-xl bg-red-600 py-3 font-semibold disabled:opacity-50"
+                >
+                  {busy === "join" ? "Joining..." : "Join Room"}
+                </button>
+
+                {joinError && <p className="text-sm text-red-400">{joinError}</p>}
+              </div>
+            </section>
+          </div>
+        )}
       </div>
     </main>
-  )
+  );
 }

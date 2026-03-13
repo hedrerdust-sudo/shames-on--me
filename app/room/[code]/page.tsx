@@ -18,6 +18,10 @@ export default function RoomPage() {
   const [players, setPlayers] = useState<PlayerRow[]>([]);
   const [isHost, setIsHost] = useState(false);
   const [hasNavigatedToPlay, setHasNavigatedToPlay] = useState(false);
+  const [joinName, setJoinName] = useState("");
+  const [joinBusy, setJoinBusy] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const [isKnownPlayer, setIsKnownPlayer] = useState(false);
 
   useEffect(() => {
     try {
@@ -36,6 +40,7 @@ export default function RoomPage() {
 
       const me = players.find((p) => String(p.id) === storedPlayerId);
       if (me) {
+        setIsKnownPlayer(true);
         setIsHost(Boolean(me.is_host));
       }
     } catch {
@@ -129,6 +134,62 @@ export default function RoomPage() {
     };
   }, [code, hasNavigatedToPlay, router]);
 
+  async function handleJoinRoomHere() {
+    const name = joinName.trim();
+    if (!name || !room) {
+      setJoinError("Please enter your name.");
+      return;
+    }
+
+    setJoinBusy(true);
+    setJoinError(null);
+
+    try {
+      const { data: player, error: playerError } = await supabase
+        .from("players")
+        .insert([
+          {
+            room_id: room.id,
+            name,
+            is_host: false,
+          },
+        ])
+        .select("id, name, is_host")
+        .single();
+
+      if (playerError) throw playerError;
+
+      try {
+        sessionStorage.setItem("som:room_code", code);
+        sessionStorage.setItem("som:player_name", player?.name ?? name);
+        sessionStorage.setItem("som:is_host", player?.is_host ? "true" : "false");
+        sessionStorage.setItem("som:player_id", String(player?.id ?? ""));
+      } catch {
+        // ignore storage errors
+      }
+
+      setPlayers((prev) =>
+        player
+          ? [
+              ...prev,
+              {
+                id: player.id,
+                name: player.name,
+                is_host: player.is_host,
+              },
+            ]
+          : prev
+      );
+      setIsKnownPlayer(true);
+      setJoinName("");
+    } catch (e) {
+      console.error(e);
+      setJoinError("Could not join this room. Please try again.");
+    } finally {
+      setJoinBusy(false);
+    }
+  }
+
   async function handleStartGame() {
     if (!room) return;
 
@@ -189,7 +250,7 @@ export default function RoomPage() {
           )}
         </div>
 
-        {isHost && (
+        {isKnownPlayer && isHost && (
           <button
             className="mt-6 w-full rounded-xl bg-red-600 py-3 font-semibold disabled:opacity-50"
             onClick={handleStartGame}
@@ -197,6 +258,33 @@ export default function RoomPage() {
           >
             Start Game
           </button>
+        )}
+
+        {!isKnownPlayer && !loading && !error && room && (
+          <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
+            <h2 className="text-sm font-semibold text-white/80">Join this room</h2>
+            <div className="mt-3 space-y-3">
+              <div>
+                <label className="text-xs text-white/60">Your name</label>
+                <input
+                  value={joinName}
+                  onChange={(e) => setJoinName(e.target.value)}
+                  placeholder="e.g. Halil"
+                  className="mt-1 w-full rounded-xl bg-black/40 border border-white/10 px-3 py-3 outline-none focus:border-white/30"
+                />
+              </div>
+
+              <button
+                onClick={handleJoinRoomHere}
+                disabled={joinBusy}
+                className="w-full rounded-xl bg-red-600 py-3 font-semibold disabled:opacity-50"
+              >
+                {joinBusy ? "Joining..." : "Join Room"}
+              </button>
+
+              {joinError && <p className="text-sm text-red-400">{joinError}</p>}
+            </div>
+          </div>
         )}
       </div>
     </main>
