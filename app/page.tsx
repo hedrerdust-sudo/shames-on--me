@@ -161,7 +161,7 @@ export default function Home() {
       : "";
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6">
+    <main className="min-h-screen flex flex-col items-center justify-center p-6 text-white">
       <div className="w-full max-w-md">
         <h1 className="text-3xl font-bold tracking-tight text-center">Shames On Me</h1>
         <p className="mt-2 text-center text-sm text-white/60">
@@ -172,13 +172,13 @@ export default function Home() {
           <div className="mt-8 space-y-4">
             <button
               onClick={() => setView("create")}
-              className="w-full rounded-xl bg-white text-black py-3 font-semibold"
+              className="w-full btn-secondary"
             >
               Create a New Game Room
             </button>
             <button
               onClick={() => setView("join")}
-              className="w-full rounded-xl bg-red-600 py-3 font-semibold"
+              className="w-full btn-primary"
             >
               Join as a Player
             </button>
@@ -189,12 +189,12 @@ export default function Home() {
           <div className="mt-8 space-y-4">
             <button
               onClick={() => setView("start")}
-              className="text-xs text-white/60 underline underline-offset-4"
+              className="text-xs text-white/80 underline underline-offset-4"
             >
               ← Back
             </button>
 
-            <section className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <section className="rounded-3xl border border-white/20 bg-white/15 backdrop-blur-md p-4">
               <h2 className="text-sm font-semibold text-white/80">Create a New Game Room</h2>
 
               <div className="mt-3 space-y-3">
@@ -211,14 +211,14 @@ export default function Home() {
                 <button
                   onClick={createRoom}
                   disabled={busy !== null}
-                  className="w-full rounded-xl bg-white text-black py-3 font-semibold disabled:opacity-50"
+                  className="w-full btn-primary disabled:opacity-50"
                 >
                   {busy === "create" ? "Creating..." : "Create Room"}
                 </button>
               </div>
 
               {createResultCode && (
-                <div className="mt-4 rounded-xl bg-black/40 border border-white/10 p-3 space-y-3">
+                <div className="mt-4 rounded-2xl bg-black/30 border border-white/20 p-3 space-y-3">
                   <div>
                     <div className="text-xs text-white/60">Room code</div>
                     <div className="mt-1 text-2xl font-bold tracking-widest">
@@ -242,7 +242,7 @@ export default function Home() {
                               // ignore
                             }
                           }}
-                          className="shrink-0 rounded-lg border border-white/20 px-2 py-1 text-xs text-white/80"
+                          className="shrink-0 rounded-lg border border-white/30 px-2 py-1 text-xs text-white/90"
                         >
                           Copy
                         </button>
@@ -252,7 +252,7 @@ export default function Home() {
 
                   <button
                     onClick={() => router.push(`/room/${createResultCode}`)}
-                    className="w-full rounded-xl bg-red-600 py-2.5 font-semibold"
+                    className="w-full btn-secondary"
                   >
                     Start Game
                   </button>
@@ -268,12 +268,12 @@ export default function Home() {
           <div className="mt-8 space-y-4">
             <button
               onClick={() => setView("start")}
-              className="text-xs text-white/60 underline underline-offset-4"
+              className="text-xs text-white/80 underline underline-offset-4"
             >
               ← Back
             </button>
 
-            <section className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <section className="rounded-3xl border border-white/20 bg-white/15 backdrop-blur-md p-4">
               <h2 className="text-sm font-semibold text-white/80">Join as a Player</h2>
 
               <div className="mt-3 space-y-3">
@@ -302,7 +302,7 @@ export default function Home() {
                 <button
                   onClick={joinRoom}
                   disabled={busy !== null}
-                  className="w-full rounded-xl bg-red-600 py-3 font-semibold disabled:opacity-50"
+                  className="w-full btn-primary disabled:opacity-50"
                 >
                   {busy === "join" ? "Joining..." : "Join Room"}
                 </button>

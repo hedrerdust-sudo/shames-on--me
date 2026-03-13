@@ -214,14 +214,14 @@ export default function RoomPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col items-center p-6">
+    <main className="min-h-screen flex flex-col items-center p-6 text-white">
       <div className="w-full max-w-md">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div className="rounded-3xl border border-white/20 bg-white/15 backdrop-blur-md p-4">
           <div className="text-xs text-white/60">Room</div>
           <div className="mt-1 text-2xl font-bold tracking-widest">{code}</div>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div className="mt-6 rounded-3xl border border-white/20 bg-white/15 backdrop-blur-md p-4">
           <h2 className="text-sm font-semibold text-white/80">Players in room</h2>
 
           {loading && <p className="mt-3 text-sm text-white/60">Loading...</p>}
@@ -235,11 +235,11 @@ export default function RoomPage() {
                 players.map((p) => (
                   <li
                     key={String(p.id)}
-                    className="flex items-center justify-between rounded-xl border border-white/10 bg-black/40 px-3 py-2"
+                    className="flex items-center justify-between rounded-2xl border border-white/20 bg-black/30 px-3 py-2"
                   >
                     <span className="font-medium">{p.name}</span>
                     {p.is_host && (
-                      <span className="text-xs rounded-full border border-white/10 bg-white/10 px-2 py-0.5 text-white/80">
+                      <span className="text-xs rounded-full border border-white/20 bg-white/20 px-2 py-0.5 text-white">
                         Host
                       </span>
                     )}
@@ -252,7 +252,7 @@ export default function RoomPage() {
 
         {isKnownPlayer && isHost && (
           <button
-            className="mt-6 w-full rounded-xl bg-red-600 py-3 font-semibold disabled:opacity-50"
+            className="mt-6 w-full btn-primary disabled:opacity-50"
             onClick={handleStartGame}
             disabled={loading || Boolean(error) || !room}
           >
@@ -261,7 +261,7 @@ export default function RoomPage() {
         )}
 
         {!isKnownPlayer && !loading && !error && room && (
-          <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div className="mt-6 rounded-3xl border border-white/20 bg-white/15 backdrop-blur-md p-4">
             <h2 className="text-sm font-semibold text-white/80">Join this room</h2>
             <div className="mt-3 space-y-3">
               <div>
@@ -274,11 +274,11 @@ export default function RoomPage() {
                 />
               </div>
 
-              <button
-                onClick={handleJoinRoomHere}
-                disabled={joinBusy}
-                className="w-full rounded-xl bg-red-600 py-3 font-semibold disabled:opacity-50"
-              >
+                <button
+                  onClick={handleJoinRoomHere}
+                  disabled={joinBusy}
+                  className="w-full btn-primary disabled:opacity-50"
+                >
                 {joinBusy ? "Joining..." : "Join Room"}
               </button>
 

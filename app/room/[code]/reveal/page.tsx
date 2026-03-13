@@ -229,25 +229,28 @@ export default function RevealPage() {
     rule === "majority" ? majorityOption : rule === "minority" ? minorityOption : null;
 
   const ruleLabelTr =
-    rule === "majority" ? "Çoğunluk içer" : rule === "minority" ? "Azınlık içer" : "";
+    rule === "majority" ? "ÇOĞUNLUK İÇER!" : rule === "minority" ? "AZINLIK İÇER!" : "";
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col items-center p-6">
+    <main className="min-h-screen flex flex-col items-center p-6 text-white">
       <div className="w-full max-w-md">
         <header className="flex items-center justify-between mb-6">
           <div className="text-xs text-white/60">Room</div>
           <div className="ml-2 text-xl font-semibold tracking-widest">{code}</div>
         </header>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+        <div className="rounded-3xl border border-white/20 bg-white/15 backdrop-blur-md p-5">
           {!loading && !error && rule && (
-            <p className="mb-3 text-xs text-white/70">
-              {isRandomRule ? "🎲 Kural: Rastgele → " : "🍻 Kural: "}
-              <span className="font-semibold">{ruleLabelTr}</span>
-            </p>
+            <div className="mb-4 flex justify-center">
+              <div className="rule-pill rule-bounce-in">
+                <span className="question-font text-xl sm:text-2xl font-extrabold tracking-[0.1em]">
+                  {ruleLabelTr}
+                </span>
+              </div>
+            </div>
           )}
 
-          <h1 className="text-lg font-semibold text-white mb-4">
+          <h1 className="text-lg font-semibold mb-4 question-font">
             {currentQuestion?.text ?? "Question"}
           </h1>
 
@@ -262,12 +265,12 @@ export default function RevealPage() {
                     key={result.option}
                     className={
                       drinkingOption === result.option
-                        ? "rounded-xl border border-red-500/80 bg-red-600/30 -mx-1 px-4 py-3"
-                        : ""
+                        ? "rounded-2xl border border-white/60 bg-[#7ED957]/80 backdrop-blur-md shadow-lg -mx-1 px-4 py-3"
+                        : "rounded-2xl border border-white/10 bg-black/20 px-4 py-3"
                     }
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h2 className="text-sm font-semibold text-white/80">
+                      <h2 className="text-sm font-semibold question-font">
                         {result.option}
                       </h2>
                       <span className="text-sm text-white/80">{result.percent}%</span>
@@ -275,10 +278,10 @@ export default function RevealPage() {
                     {result.names.length === 0 ? (
                       <p className="text-xs text-white/50">No one chose this.</p>
                     ) : (
-                      <ul className="space-y-1 text-sm">
+                      <ul className="space-y-1 text-sm text-center">
                         {result.names.map((name) => (
-                          <li key={`${result.option}-${name}`} className="text-white/90">
-                            - {name}
+                          <li key={`${result.option}-${name}`} className="name-tag">
+                            {name}
                           </li>
                         ))}
                       </ul>

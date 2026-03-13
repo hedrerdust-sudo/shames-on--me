@@ -233,17 +233,17 @@ export default function PlayPage() {
       : null;
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col items-center p-6">
+    <main className="min-h-screen flex flex-col items-center p-6 text-white">
       <div className="w-full max-w-md">
         <header className="flex items-center justify-between mb-6">
           <div className="text-xs text-white/60">Room</div>
           <div className="ml-2 text-xl font-semibold tracking-widest">{code}</div>
         </header>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+        <div className="rounded-3xl border border-white/20 bg-white/15 backdrop-blur-md p-5">
           {!hasAnswered ? (
             <>
-              <h1 className="text-lg font-semibold text-white mb-4">
+              <h1 className="text-lg font-semibold mb-4 question-font">
                 {currentQuestion?.text ?? "No question"}
               </h1>
 
@@ -257,11 +257,9 @@ export default function PlayPage() {
                 {currentQuestion?.options.map((option, index) => (
                   <button
                     key={option}
-                    className={
-                      index === 0
-                        ? "w-full rounded-xl bg-red-600 py-3 font-semibold disabled:opacity-50"
-                        : "w-full rounded-xl bg-white text-black py-3 font-semibold disabled:opacity-50"
-                    }
+                    className={`w-full question-font ${
+                      index === 0 ? "btn-primary" : "btn-secondary"
+                    } disabled:opacity-50`}
                     onClick={() => handleAnswer(option)}
                     disabled={loading || !!error || !room || !!answering || hasAnswered}
                   >
