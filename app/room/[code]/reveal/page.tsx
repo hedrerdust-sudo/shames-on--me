@@ -155,6 +155,8 @@ export default function RevealPage() {
   useEffect(() => {
     if (!currentQuestion || !room) return;
 
+    const roomId = room.id;
+
     let cancelled = false;
 
     async function ensureRuleForRound() {
@@ -162,7 +164,7 @@ export default function RevealPage() {
         const { data: latestRoom, error } = await supabase
           .from("rooms")
           .select("id, code, current_question_index, current_rule")
-          .eq("id", room.id)
+          .eq("id", roomId)
           .maybeSingle();
 
         if (error || !latestRoom) return;
